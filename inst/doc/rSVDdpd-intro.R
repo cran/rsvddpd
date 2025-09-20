@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -23,23 +23,26 @@ X[2, 2] <- 100
 svd(X)
 
 ## -----------------------------------------------------------------------------
-rSVDdpd(X, alpha = 0.3)
+rSVDdpd(X, alpha = 0.3, nd = min(dim(X)))
 
 ## -----------------------------------------------------------------------------
-rSVDdpd(X * 1e6, alpha  = 0.3)
-rSVDdpd(X * 1e-6, alpha = 0.3)
+rSVDdpd(X * 1e6, alpha  = 0.3, nd = min(dim(X)))
+rSVDdpd(X * 1e-6, alpha = 0.3, nd = min(dim(X)))
 
 ## -----------------------------------------------------------------------------
 Y <- X[, c(3, 1, 2)]
-rSVDdpd(Y, alpha = 0.3)
+rSVDdpd(Y, alpha = 0.3, nd = min(dim(Y)))
 
 ## -----------------------------------------------------------------------------
-crossprod(rSVDdpd(X, alpha = 0.3)$u)
+crossprod(rSVDdpd(X, alpha = 0.3, nd = min(dim(X)))$u)
 
 ## -----------------------------------------------------------------------------
-microbenchmark::microbenchmark(svd(X), rSVDdpd(X, alpha = 0), rSVDdpd(X, alpha = 0.25), 
-                               rSVDdpd(X, alpha = 0.5), rSVDdpd(X, alpha = 0.75), 
-                               rSVDdpd(X, alpha = 1), times = 30)
+microbenchmark::microbenchmark(svd(X), 
+                               rSVDdpd(X, alpha = 0, nd = min(dim(X))), 
+                               rSVDdpd(X, alpha = 0.25, nd = min(dim(X))), 
+                               rSVDdpd(X, alpha = 0.5, nd = min(dim(X))), 
+                               rSVDdpd(X, alpha = 0.75, nd = min(dim(X))), 
+                               rSVDdpd(X, alpha = 1, nd = min(dim(X))), times = 30)
 
 ## -----------------------------------------------------------------------------
 U <- as.matrix(stats::contr.poly(10)[, 1:3])
@@ -59,13 +62,16 @@ res <- simSVD(trueSVD, svdfun = pcaMethods::robustSvd, B = 100, seed = 2021, out
 res
 
 ## ----results='hide'-----------------------------------------------------------
-res <- simSVD(trueSVD, svdfun = rSVDdpd, B = 100, seed = 2021, outlier = TRUE, out_value = 25, tau = 0.9, alpha = 0.25)
+rSVDdpd_max <- function(X, alpha) {
+  return(rSVDdpd(X, alpha = alpha, nd = min(dim(X))))
+}
+res <- simSVD(trueSVD, svdfun = rSVDdpd_max, B = 100, seed = 2021, outlier = TRUE, out_value = 25, tau = 0.9, alpha = 0.25)
 
 ## -----------------------------------------------------------------------------
 res
 
 ## ----results='hide'-----------------------------------------------------------
-res <- simSVD(trueSVD, svdfun = rSVDdpd, B = 100, seed = 2021, outlier = TRUE, out_value = 25, tau = 0.9, alpha = 0.75)
+res <- simSVD(trueSVD, svdfun = rSVDdpd_max, B = 100, seed = 2021, outlier = TRUE, out_value = 25, tau = 0.9, alpha = 0.75)
 
 ## -----------------------------------------------------------------------------
 res
